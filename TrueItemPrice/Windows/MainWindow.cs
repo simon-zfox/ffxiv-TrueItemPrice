@@ -6,17 +6,17 @@ using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
 
-namespace SamplePlugin.Windows;
+namespace TrueItemPrice.Windows;
 
 public class MainWindow : Window, IDisposable
 {
     private string GoatImagePath;
-    private Plugin Plugin;
+    private TrueItemPricePlugin trueItemPricePlugin;
 
     // We give this window a hidden ID using ##
     // So that the user will see "My Amazing Window" as window title,
     // but for ImGui the ID is "My Amazing Window##With a hidden ID"
-    public MainWindow(Plugin plugin, string goatImagePath)
+    public MainWindow(TrueItemPricePlugin trueItemPricePlugin, string goatImagePath)
         : base("My Amazing Window##With a hidden ID", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         SizeConstraints = new WindowSizeConstraints
@@ -26,7 +26,7 @@ public class MainWindow : Window, IDisposable
         };
 
         GoatImagePath = goatImagePath;
-        Plugin = plugin;
+        this.trueItemPricePlugin = trueItemPricePlugin;
     }
 
     public void Dispose() { }
@@ -37,11 +37,11 @@ public class MainWindow : Window, IDisposable
         // These expect formatting parameter if any part of the text contains a "%", which we can't
         // provide through our bindings, leading to a Crash to Desktop.
         // Replacements can be found in the ImGuiHelpers Class
-        ImGui.TextUnformatted($"The random config bool is {Plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
+        ImGui.TextUnformatted($"The random config bool is {trueItemPricePlugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
 
         if (ImGui.Button("Show Settings"))
         {
-            Plugin.ToggleConfigUI();
+            trueItemPricePlugin.ToggleConfigUI();
         }
 
         ImGui.Spacing();
@@ -55,15 +55,15 @@ public class MainWindow : Window, IDisposable
             if (child.Success)
             {
                 ImGui.TextUnformatted("Have a goat:");
-                var goatImage = Plugin.TextureProvider.GetFromFile(GoatImagePath).GetWrapOrDefault();
-                if (goatImage != null)
+                //var goatImage = trueItemPricePlugin.TextureProvider.GetFromFile(GoatImagePath).GetWrapOrDefault();
+                /*if (goatImage != null)
                 {
                     using (ImRaii.PushIndent(55f))
                     {
                         ImGui.Image(goatImage.ImGuiHandle, new Vector2(goatImage.Width, goatImage.Height));
                     }
                 }
-                else
+                else*/
                 {
                     ImGui.TextUnformatted("Image not found.");
                 }
@@ -73,7 +73,7 @@ public class MainWindow : Window, IDisposable
                 // Example for other services that Dalamud provides.
                 // ClientState provides a wrapper filled with information about the local player object and client.
 
-                var localPlayer = Plugin.ClientState.LocalPlayer;
+                var localPlayer = Service.ClientState.LocalPlayer;
                 if (localPlayer == null)
                 {
                     ImGui.TextUnformatted("Our local player is currently not loaded.");
@@ -91,8 +91,8 @@ public class MainWindow : Window, IDisposable
                 ImGui.TextUnformatted($"Our current job is ({localPlayer.ClassJob.RowId}) \"{localPlayer.ClassJob.Value.Abbreviation.ExtractText()}\"");
 
                 // Example for quarrying Lumina directly, getting the name of our current area.
-                var territoryId = Plugin.ClientState.TerritoryType;
-                if (Plugin.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
+                var territoryId = Service.ClientState.TerritoryType;
+                if (Service.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
                 {
                     ImGui.TextUnformatted($"We are currently in ({territoryId}) \"{territoryRow.PlaceName.Value.Name.ExtractText()}\"");
                 }

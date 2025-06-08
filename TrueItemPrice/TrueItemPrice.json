@@ -1,0 +1,9 @@
+{
+  "Author": "Zfox Simon",
+  "Name": "TrueItemPrice",
+  "Punchline": "Improve your inventory cleanup experience",
+  "Description": "Displays the realistic price of an item. Shows if an item should be vendored or sold on the marked board, using live market data from universalis. Inspired by https://github.com/kouzukii/ffxiv-priceinsight",
+  "ApplicableVersion": "any",
+  "Tags": [
+  ]
+}
