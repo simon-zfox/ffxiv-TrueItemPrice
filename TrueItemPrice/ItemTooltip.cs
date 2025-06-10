@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Client.System.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -152,28 +154,46 @@ public class ItemTooltip(TrueItemPricePlugin plugin) : IDisposable
      */
     private unsafe void UpdateTIPNode(AtkTextNode* tipNode)
     {
-        var hoveredItemID = (uint)(Service.GameGui.HoveredItem % 500000);
-        Service.PluginLog.Info("Item: " + hoveredItemID);
-        var sheet = Service.DataManager.Excel.GetSheet<Item>();
-        var row = sheet.GetRow(hoveredItemID);
+        //var hoveredItemID = (uint)(Service.GameGui.HoveredItem % 500000);
+        var hoveredItemID = Service.GameGui.HoveredItem;
+        var hq = false;
+        if (hoveredItemID > 1000000)
+        {
+            hoveredItemID -= 1000000;
+            hq = true;
+        }
 
-        var vendorPrice = row.PriceLow;
-        if (vendorPrice > 0)
+        var tipString = plugin.TIPEngine.GenerateTIP((uint)hoveredItemID, (uint)(LastItemQuantity ?? 1), hq);
+        tipNode->SetText(tipString);
+        //Service.PluginLog.Info("Item: " + hoveredItemID);
+    }
+
+    public void Refresh(uint itemID)
+    {
+        var hoverItem = Util.GetHoverItem();
+
+        if (hoverItem == itemID)
         {
-            tipNode->SetText(new SeStringBuilder()
-                             .Append("TIP: ")
-                             .PushColorRgba(255, 0, 0, 255)
-                             .Append("Vendor this item for " + vendorPrice + GilIcon)
-                             .PopColor()
-                             .ToReadOnlySeString());
+            Service.PluginLog.Info($"Refreshing item tooltip {hoverItem}");
         }
-        else
+        Service.Framework.RunOnFrameworkThread(() =>
         {
-            tipNode->SetText(new SeStringBuilder()
-                             .Append("TIP: ")
-                             .Append("Unknown!")
-                             .ToReadOnlySeString());
-        }
+            try
+            {
+                var tooltip = Service.GameGui.GetAddonByName("ItemDetail");
+                unsafe
+                {
+                    if (tooltip == nint.Zero || !((AtkUnitBase*)tooltip)->IsVisible)
+                        return;
+                    RestoreToNormal((AtkUnitBase*)tooltip);
+                    UpdateItemTooltip((AtkUnitBase*)tooltip);
+                }
+            }
+            catch (Exception e)
+            {
+                Service.PluginLog.Error(e, "Failed to update tooltip");
+            }
+        });
     }
 
     /**

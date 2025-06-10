@@ -10,6 +10,7 @@ namespace TrueItemPrice;
 public sealed class TrueItemPricePlugin : IDalamudPlugin
 {
     private const string CommandName = "/pmycommand";
+    public static readonly string PluginVersion = "0.1"; //TODO who to get this to the plugin listing?
 
     public Configuration Configuration { get; init; }
 
@@ -18,6 +19,8 @@ public sealed class TrueItemPricePlugin : IDalamudPlugin
     private MainWindow MainWindow { get; init; }
     public ItemTooltip ItemTooltip { get; }
     public Hooks Hooks { get; }
+    public TIPEngine TIPEngine { get; }
+    public UniversalisClient  UniversalisClient { get; }
 
     public TrueItemPricePlugin(IDalamudPluginInterface pluginInterface)
     {
@@ -31,6 +34,9 @@ public sealed class TrueItemPricePlugin : IDalamudPlugin
         MainWindow = new MainWindow(this, goatImagePath);
         ItemTooltip = new ItemTooltip(this);
         Hooks = new Hooks(this);
+        TIPEngine = new TIPEngine(this);
+        UniversalisClient = new UniversalisClient(this);
+        UniversalisClient.Initialize();
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
@@ -54,6 +60,7 @@ public sealed class TrueItemPricePlugin : IDalamudPlugin
         // Example Output: 00:57:54.959 | INF | [TrueItemPrice] ===A cool log message from Sample Plugin===
         Service.PluginLog.Information($"===A cool log message from {pluginInterface.Manifest.Name}===");
     }
+
 
     public void Dispose()
     {
