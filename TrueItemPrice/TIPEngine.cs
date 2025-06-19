@@ -45,7 +45,31 @@ public class TIPEngine(TrueItemPricePlugin plugin)
     {
         builder.Append("TIP Buy: ");
         var vendorBuyPrice = item.PriceMid;
-        if (vendorBuyPrice > 0)
+
+        uint marketPrice = 0;
+        if (plugin.UniversalisClient.IsBuffered(item.RowId))
+        {
+            var md = plugin.UniversalisClient.GetFromBuffer(item.RowId);
+            //marketPrice = (int?)md?.Listings[0].TotalPrice ?? 0;
+            marketPrice = plugin.UniversalisClient.CalculateSellPrice(item.RowId, quantity,402, hq);;
+        }
+
+
+        if (plugin.UniversalisClient.IsFetching(item.RowId))
+        {
+            builder.PushColorType(1); // white
+            builder.Append(
+                $"Fetching data from Universalis...");
+            builder.PopColorType();
+        }
+        else if (marketPrice > 0)
+        {
+            builder.PushColorType(17); //red
+            builder.Append(
+                $"Buy this from the Marketboard for {marketPrice}{GilIcon} (TODO proper calc)");
+            builder.PopColorType();
+        }
+        else if (vendorBuyPrice > 0)
         {
             builder.PushColorType(42); //light green
             builder.Append(

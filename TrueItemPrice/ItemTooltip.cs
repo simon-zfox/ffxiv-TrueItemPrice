@@ -175,25 +175,25 @@ public class ItemTooltip(TrueItemPricePlugin plugin) : IDisposable
         if (hoverItem == itemID)
         {
             Service.PluginLog.Info($"Refreshing item tooltip {hoverItem}");
-        }
-        Service.Framework.RunOnFrameworkThread(() =>
-        {
-            try
+            Service.Framework.RunOnFrameworkThread(() =>
             {
-                var tooltip = Service.GameGui.GetAddonByName("ItemDetail");
-                unsafe
+                try
                 {
-                    if (tooltip == nint.Zero || !((AtkUnitBase*)tooltip)->IsVisible)
-                        return;
-                    RestoreToNormal((AtkUnitBase*)tooltip);
-                    UpdateItemTooltip((AtkUnitBase*)tooltip);
+                    var tooltip = Service.GameGui.GetAddonByName("ItemDetail");
+                    unsafe
+                    {
+                        if (tooltip == nint.Zero || !((AtkUnitBase*)tooltip)->IsVisible)
+                            return;
+                        RestoreToNormal((AtkUnitBase*)tooltip);
+                        UpdateItemTooltip((AtkUnitBase*)tooltip);
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                Service.PluginLog.Error(e, "Failed to update tooltip");
-            }
-        });
+                catch (Exception e)
+                {
+                    Service.PluginLog.Error(e, "Failed to update tooltip");
+                }
+            });
+        }
     }
 
     /**
