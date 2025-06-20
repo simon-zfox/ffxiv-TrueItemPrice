@@ -46,7 +46,7 @@ public static class Util
         return id > 1000000 ? ((uint)id - 1000000, true) : ((uint)id, false);
     }
 
-    public static T CalcWeightedMedianExp<T>(IEnumerable<T> values)
+    public static T CalcWeightedMedianExp<T>(IEnumerable<T> values, double exponent)
         where T : IComparable<T>
     {
         //chack parameters
@@ -59,24 +59,21 @@ public static class Util
         var weights = new double[valueArray.Length];
         for (var i = 0; i < valueArray.Length; i++)
         {
-            weights[i] = Math.Exp(-0.2 * i); // Exponential decay with factor -0.5 //TODO config
+            weights[i] = Math.Exp(exponent * i); // Exponential decay
         }
 
         // Create pairs of values and weights, then sort by values
-        var pairs1 = valueArray.Zip(weights, (v, w) => new { Value = v, Weight = w });
-                              
-
-        foreach (var pair in pairs1)
+        var pairs = valueArray.Zip(weights, (v, w) => new { Value = v, Weight = w });
+        /*foreach (var pair in pairs)
         {
             Service.PluginLog.Debug($"{pair.Value} {pair.Weight}");
-        }
-        
-        var pairs = pairs1.OrderBy(x => x.Value).ToList();
+        }*/
+        pairs = pairs.OrderBy(x => x.Value).ToList();
 
-        var totalWeight = weights.Sum();
-        var halfWeight = totalWeight / 2;
 
         // Find the value where cumulative weight sum exceeds half of total weight
+        var totalWeight = weights.Sum();
+        var halfWeight = totalWeight / 2;
         double weightSum = 0;
         foreach (var t in pairs)
         {

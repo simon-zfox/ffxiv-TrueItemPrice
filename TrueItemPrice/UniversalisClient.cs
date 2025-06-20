@@ -105,9 +105,20 @@ public class UniversalisClient
         var filtered = marketDataBuffer[itemID].RecentHistory.Where(o => o.WorldID == worldID && o.Hq == hq);
         var unitPrices = filtered.OrderByDescending(o => o.Timestamp).Select(o => o.PricePerUnit).ToList();
         //Service.PluginLog.Debug($"UnitPrices (history) {string.Join("\n", unitPrices)}");
-        var weightedMedian = Util.CalcWeightedMedianExp(unitPrices);
-        Service.PluginLog.Debug($"Weighted median {weightedMedian}");
-        return 1;
+        var weightedMedian = Util.CalcWeightedMedianExp(unitPrices, -0.2); //TODO config
+        //Service.PluginLog.Debug($"Weighted median {weightedMedian}");
+        
+        return weightedMedian * quantity;
+    }
+
+    public double getSaleVelocity(uint itemID, bool hq)
+    {
+        if (!IsBuffered(itemID))
+        {
+            Service.PluginLog.Error($"Item {itemID} is not buffered!");
+            return 0;
+        }
+        return hq ? marketDataBuffer[itemID].HqSaleVelocity : marketDataBuffer[itemID].NqSaleVelocity;
     }
 
     public bool IsMarketable(uint itemID)
